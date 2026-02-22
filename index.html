@@ -1,121 +1,143 @@
-<div>Rock, paper, scissors</div>
-<button type="button" onclick="init()">Start</button>
-<button id="gameBtn" type="button", style="display: none;" onclick="countDownToGame()">Start Game</button>
-<div><h2 id="countDownDigit"></h2></div>
-<div id="webcam-container"></div>
-<div id="label-container"></div>
-<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
-<script type="text/javascript">
-    // More API functions here:
-    // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
-
-    // the link to your model provided by Teachable Machine export panel
-    const modelFolder = "./my_model/";
-    const countDown = document.getElementById("countDownDigit")
-    const gameBtn = document.getElementById("gameBtn")
-
-    let model, webcam, labelContainer, maxPredictions;
-
-    // Kivi paperi sakset peli
-    let nothing, stone, scissors, paper
-    const choices = ["Nothing", "Stone", "Scissors", "Paper"]
-
-    // Load the image model and setup the webcam
-    async function init() {
-        const modelURL = modelFolder + "model.json";
-        const metadataURL = modelFolder + "metadata.json";
-
-        // load the model and metadata
-        // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
-        // or files from your local hard drive
-        // Note: the pose library adds "tmImage" object to your window (window.tmImage)
-        model = await tmImage.load(modelURL, metadataURL);
-        maxPredictions = model.getTotalClasses();
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rock, paper scissors</title>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Rock, paper, scissors</h1>
+        <button type="button" onclick="init()">Begin</button>
+        <button id="gameBtn" type="button", style="display: none;" onclick="countDownToGame()">Start Game</button>
+        <div><h2 id="countDownDigit"></h2></div>
+        <div id="webcam-container"></div>
+        <div id="label-container"></div>
+    </div>
 
 
-        // Convenience function to setup a webcam
-        const flip = true; // whether to flip the webcam
-        webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
-        await webcam.setup(); // request access to the webcam
-        await webcam.play();
-        //window.requestAnimationFrame(loop);
 
-        // append elements to the DOM
-        document.getElementById("webcam-container").appendChild(webcam.canvas);
-        labelContainer = document.getElementById("label-container");
-        for (let i = 0; i < maxPredictions; i++) { // and class labels
-            labelContainer.appendChild(document.createElement("div"));
-        }
-        // Pelinappi näkyviin
-        gameBtn.style.display = "block"
-
-    }
-
-    // kivi paperi sakset "lasku"
-    function countDownToGame(){
-        let start = 3
-        countDown.innerText = start.toString()
-        const intervalId = setInterval(() => {
-            start += -1
-            countDown.innerText = start.toString()
-            
-            if (start == 0) {
-                clearInterval(intervalId)
-                inProgress = true
-                checkResult()
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@latest/dist/teachablemachine-image.min.js"></script>
+    <script type="text/javascript">
+        // More API functions here:
+        // https://github.com/googlecreativelab/teachablemachine-community/tree/master/libraries/image
+    
+        // the link to your model provided by Teachable Machine export panel
+        const modelFolder = "./my_model/";
+        const countDown = document.getElementById("countDownDigit")
+        const gameBtn = document.getElementById("gameBtn")
+    
+        let model, webcam, labelContainer, maxPredictions;
+    
+        // Kivi paperi sakset peli
+        let nothing, stone, scissors, paper
+        const choices = ["Nothing", "Stone", "Scissors", "Paper"]
+    
+        // Load the image model and setup the webcam
+        async function init() {
+            const modelURL = modelFolder + "model.json";
+            const metadataURL = modelFolder + "metadata.json";
+    
+            // load the model and metadata
+            // Refer to tmImage.loadFromFiles() in the API to support files from a file picker
+            // or files from your local hard drive
+            // Note: the pose library adds "tmImage" object to your window (window.tmImage)
+            model = await tmImage.load(modelURL, metadataURL);
+            maxPredictions = model.getTotalClasses();
+    
+    
+            // Convenience function to setup a webcam
+            const flip = true; // whether to flip the webcam
+            webcam = new tmImage.Webcam(200, 200, flip); // width, height, flip
+            await webcam.setup(); // request access to the webcam
+            await webcam.play();
+            //window.requestAnimationFrame(loop);
+    
+            // append elements to the DOM
+            if (document.getElementById("webcam-container").childElementCount == 0){
+                document.getElementById("webcam-container").appendChild(webcam.canvas);
             }
-
-        }, 1000)
-
-    }
-
-    // Katsotaan 500ms mikä pelaajalla on
-    async function checkResult(){
-        let endScan = performance.now() + 500
-
-        while (performance.now() < endScan){
-            webcam.update()
-            const prediction = await model.predict(webcam.canvas);
-            for (let i = 0; i < maxPredictions; i++) {
-                switch (prediction[i].className) {
-                    case "Nothing":
-                        nothing = prediction[i].probability
-                        break
-                    case "Stone":
-                        stone = prediction[i].probability
-                        break
-                    case "Scissors":
-                        scissors = prediction[i].probability
-                        break
-                    case "Paper":
-                        paper = prediction[i].probability
-                        break
-                    default:
-                        console.log("Default")
-                        break
+            labelContainer = document.getElementById("label-container");
+            for (let i = 0; i < maxPredictions; i++) { // and class labels
+                labelContainer.appendChild(document.createElement("div"));
+            }
+            // Pelinappi näkyviin
+            gameBtn.style.display = "block"
+    
+        }
+    
+        // kivi paperi sakset "lasku"
+        function countDownToGame(){
+            let start = 3
+            countDown.innerText = start.toString()
+            const intervalId = setInterval(() => {
+                start += -1
+                countDown.innerText = start.toString()
+                
+                if (start == 0) {
+                    clearInterval(intervalId)
+                    inProgress = true
+                    checkResult()
+                }
+    
+            }, 1000)
+    
+        }
+    
+        // Katsotaan 500ms mikä pelaajalla on
+        async function checkResult(){
+            let endScan = performance.now() + 500
+    
+            while (performance.now() < endScan){
+                webcam.update()
+                const prediction = await model.predict(webcam.canvas);
+                for (let i = 0; i < maxPredictions; i++) {
+                    switch (prediction[i].className) {
+                        case "Nothing":
+                            nothing = prediction[i].probability
+                            break
+                        case "Stone":
+                            stone = prediction[i].probability
+                            break
+                        case "Scissors":
+                            scissors = prediction[i].probability
+                            break
+                        case "Paper":
+                            paper = prediction[i].probability
+                            break
+                        default:
+                            console.log("Default")
+                            break
+                    }
                 }
             }
+            countDown.innerText = "done"
+
+    
+            // Haetaan käyttäjän näyttämä ja arvotaan koneen valinta
+            let random = Math.floor(Math.random() * 4)
+            let choice = choices[random]
+            let result = [nothing, stone, scissors, paper]
+            let biggestValue = 0
+            let biggestId = 0
+            result.forEach((element, id) => {
+                if (element > biggestValue){
+                    biggestId = id
+                    biggestValue = element
+                }
+            });
+    
+            // Valinnat näkyviin tekstinä
+            labelContainer.innerHTML = `<p>Your choice was ${choices[biggestId]}, computer chose: ${choice}<p>`
+    
         }
-        countDown.innerText = "done"
-
-        // Haetaan käyttäjän näyttämä ja arvotaan koneen valinta
-        let random = Math.floor(Math.random() * 4)
-        let choice = choices[random]
-        let result = [nothing, stone, scissors, paper]
-        let biggestValue = 0
-        let biggestId = 0
-        result.forEach((element, id) => {
-            if (element > biggestValue){
-                biggestId = id
-                biggestValue = element
-            }
-        });
-
-        // Valinnat näkyviin tekstinä
-        labelContainer.innerHTML = `<p>Your choice was ${choices[biggestId]}, computer chose: ${choice}<p>`
-
-    }
+    
+    
+    </script>
+    
+</body>
+</html>
 
 
-</script>
